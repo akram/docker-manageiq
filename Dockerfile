@@ -18,7 +18,8 @@ RUN yum -y install \
   ruby193-rubygem-thor ruby193-rubygem-thin ruby193-rubygem-daemons \
   ruby193-rubygem-eventmachine ruby193-rubygem-rack ruby193-rubygem-minitest
 
-RUN yum -y install git libxml2-devel libxslt libxslt-devel sudo memcached
+RUN yum -y install git libxml2-devel libxslt libxslt-devel make gcc gcc-c++
+RUN yum -y install sudo memcached
 
 RUN touch /etc/sysconfig/network
 RUN /etc/rc.d/init.d/postgresql92-postgresql initdb
