@@ -18,10 +18,21 @@ RUN yum -y install \
   ruby193-rubygem-thor ruby193-rubygem-thin ruby193-rubygem-daemons \
   ruby193-rubygem-eventmachine ruby193-rubygem-rack ruby193-rubygem-minitest
 
-RUN mkdir -p /var/www/
+RUN yum -y install git libxml2-devel libxslt libxslt-devel sudo memcached
 
+RUN touch /etc/sysconfig/network
+RUN /etc/rc.d/init.d/postgresql92-postgresql initdb
+RUN echo "local all all trust" > /opt/rh/postgresql92/root/var/lib/pgsql/data/pg_hba.conf
+RUN mkdir -p /opt/rh/postgresql92/root/etc/sysconfig/pgsql/
+RUN echo "unset PG_OOM_ADJ" > /opt/rh/postgresql92/root/etc/sysconfig/pgsql/postgresql92-postgresql
+
+RUN mkdir -p /var/www/
 RUN git clone https://github.com/ManageIQ/manageiq.git /var/www/miq
 
 RUN mkdir -p /var/www/miq/vmdb/log/apache
 
-#VOLUME ["/var/lib/postgresql/9.3/main"]
+WORKDIR /var/www/miq/vmdb
+RUN scl enable ruby193 postgresql92 nodejs010 "gem install bundler -v 1.3.5"
+RUN scl enable ruby193 postgresql92 nodejs010 "bundle install"
+
+VOLUME ["/opt/rh/postgresql92/root/var/lib/pgsql/data/"]
