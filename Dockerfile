@@ -2,7 +2,11 @@ FROM centos:6.4
 
 MAINTAINER Mikael Gueck, gumi@iki.fi
 
-ENV LANG=en_US.UTF-8 LANGUAGE=en_US.UTF-8 LC_ALL=en_US.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US.UTF-8
+ENV LC_ALL en_US.UTF-8
+
+ADD qpid-hack.repo /etc/yum.repos.d/qpid-hack.repo
 
 RUN rpm -ih http://mirror.centos.org/centos/6/extras/x86_64/Packages/centos-release-SCL-6-5.el6.centos.x86_64.rpm
 
@@ -29,12 +33,18 @@ RUN echo "local all all trust" > /opt/rh/postgresql92/root/var/lib/pgsql/data/pg
 RUN mkdir -p /opt/rh/postgresql92/root/etc/sysconfig/pgsql/
 RUN echo "unset PG_OOM_ADJ" > /opt/rh/postgresql92/root/etc/sysconfig/pgsql/postgresql92-postgresql
 
+# scl enable ruby193 postgresql92 nodejs010 'createdb -U postgres vmdb_test'
+# scl enable ruby193 postgresql92 nodejs010 'createdb -U postgres vmdb_development'
+# scl enable ruby193 postgresql92 nodejs010 'createdb -U postgres vmdb_production'
+# scl enable ruby193 postgresql92 nodejs010 "psql -c \"create role evm login password 'smartvm'\""
+# scl enable ruby193 postgresql92 nodejs010 "psql -c \"alter database vmdb_development owner to evm\""
+
 RUN mkdir -p /var/www/
 RUN git clone https://github.com/ManageIQ/manageiq.git /var/www/miq
 
 RUN mkdir -p /var/www/miq/vmdb/log/apache
 
-RUN scl enable ruby193 postgresql92 nodejs010 "gem install bundler -v 1.3.5"
+#RUN scl enable ruby193 postgresql92 nodejs010 "gem install bundler -v 1.3.5"
 
 WORKDIR /var/www/miq/vmdb
 RUN scl enable ruby193 postgresql92 nodejs010 "bundle install --without qpid"
