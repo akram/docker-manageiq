@@ -1,0 +1,5 @@
+[qpidhack]
+name=Qpid hack repo
+baseurl=http://copr-be.cloud.fedoraproject.org/results/jrafanie/manageiq-scl/epel-6-x86_64/
+gpgcheck=0
+enabled=1
