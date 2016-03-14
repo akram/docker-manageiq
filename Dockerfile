@@ -1,4 +1,4 @@
-FROM centos:6.4
+FROM centos:6
 
 MAINTAINER Mikael Gueck, gumi@iki.fi
 
