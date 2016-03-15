@@ -1,8 +1,10 @@
 FROM centos:centos7
 MAINTAINER Akram Ben Aissi <akram@free.fr> https://github.com/akram/manageiq 
 
-RUN yum -y update; yum clean all
-RUN yum -y install sudo epel-release; yum clean all
+RUN yum -y update sudo epel-release git libxml2-devel libxslt libxslt-devel; yum clean all
+
+# Install various packages
+RUN yum -y install nodejs net-tools git libxml2-devel libxslt libxslt-devel sudo tar which cmake
 
 #Sudo requires a tty. fix that.
 RUN sed -i 's/.*requiretty$/#Defaults requiretty/' /etc/sudoers
@@ -34,7 +36,6 @@ ADD ./start_postgres.sh /start_postgres.sh
 
 RUN chmod +x /start_postgres.sh
 
-RUN yum -y install git libxml2-devel libxslt libxslt-devel sudo tar which cmake
 
 RUN command curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -
 RUN curl -sSL https://get.rvm.io | rvm_tar_command=tar bash -s stable
@@ -63,6 +64,5 @@ RUN chmod +x /launchManageIQ.sh
 COPY createDB.sh /
 RUN chmod a+x /createDB.sh
 
-RUN yum install -y nodejs net-tools
 CMD /launchManageIQ.sh
 
