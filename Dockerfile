@@ -50,11 +50,20 @@ RUN /usr/local/rvm/bin/rvm install 2.2.2
 #RUN gem install bundler -v "~>1.3"
 
 
+RUN git clone https://github.com/ManageIQ/manageiq
+
+WORKDIR manageiq/vmdb
+#RUN bundle install --without qpid
+#WORKDIR ..
+#RUN vmdb/bin/rake build:shared_objects
+#WORKDIR vmdb
+#RUN bundle install --without qpid
 
 
+WORKDIR /
 
-
-
-
-
+EXPOSE 3000 4000
+COPY launchManageIQ.sh /
+RUN chmod +x /launchManageIQ.sh
+CMD /launchManageIQ.sh
 
