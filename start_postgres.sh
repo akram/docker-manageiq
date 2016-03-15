@@ -9,3 +9,5 @@ echo "Updating postgres default password"
 exec su postgres -c "psql -c \"alter user postgres password 'password'\";" &
 echo "Updating postgres default password: Done"
 
+
+

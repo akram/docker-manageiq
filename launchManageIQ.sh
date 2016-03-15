@@ -1,17 +1,22 @@
+nohup /start_postgres.sh &
+
 echo "waiting for the DB to start"
 sleep 5
+
+ln -s /manageiq/config/database.pg.yml /manageiq/config/database.yml
+cd /manageiq
+
 if [ -e /var/lib/pgsql/initialized ]
 then
 	echo "Reusing existing DB"
-	cd /manageiq/vmdb
 else
 	echo "Init DB"
-	sudo -u postgres sh /createDB.sh
-	cd /manageiq/vmdb
-	bin/rake db:migrate
+	su postgres /createDB.sh
+	rake db:migrate
 	touch /var/lib/pgsql/initialized
 fi
-bin/rake evm:start
-tail -f log/evm.log
+
+rake evm:start
+tail -f /manageiq/log/evm.log
 
 

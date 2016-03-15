@@ -33,12 +33,6 @@ ADD ./pg_hba.conf /var/lib/pgsql/9.4/data/pg_hba.conf
 ADD ./start_postgres.sh /start_postgres.sh
 
 RUN chmod +x /start_postgres.sh
-RUN /start_postgres.sh
-#EXPOSE 5432
-
-#Run pgEngine
-#CMD ["/start_postgres.sh"]
-
 
 RUN yum -y install git libxml2-devel libxslt libxslt-devel sudo tar which cmake
 
@@ -66,5 +60,9 @@ WORKDIR /
 EXPOSE 3000 4000
 COPY launchManageIQ.sh /
 RUN chmod +x /launchManageIQ.sh
+COPY createDB.sh /
+RUN chmod a+x /createDB.sh
+
+RUN yum install -y nodejs net-tools
 CMD /launchManageIQ.sh
 
