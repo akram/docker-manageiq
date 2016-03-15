@@ -1,61 +1,42 @@
-FROM centos:6.4
+#Author:PG - Demo/Training/Testing
 
-MAINTAINER Mikael Gueck, gumi@iki.fi
+FROM centos:centos7
+MAINTAINER Prashanth Goriparthi <prashanth@goriparthi.com>
 
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US.UTF-8
-ENV LC_ALL en_US.UTF-8
+RUN yum -y update; yum clean all
+RUN yum -y install sudo epel-release; yum clean all
 
-ADD qpid-hack.repo /etc/yum.repos.d/qpid-hack.repo
+#Sudo requires a tty. fix that.
+RUN sed -i 's/.*requiretty$/#Defaults requiretty/' /etc/sudoers
 
-RUN rpm -ih http://mirror.centos.org/centos/6/extras/x86_64/Packages/centos-release-SCL-6-5.el6.centos.x86_64.rpm
+# Install pgdg repo for getting new postgres RPMs
+RUN rpm -ivh http://yum.postgresql.org/9.4/redhat/rhel-7-x86_64/pgdg-centos94-9.4-1.noarch.rpm
 
-RUN rpm -ih http://dl.fedoraproject.org/pub/epel/6Server/x86_64/epel-release-6-8.noarch.rpm
+# Install Postgres Version 9.4
+RUN yum install postgresql94-server postgresql94 postgresql94-contrib postgresql94-plperl postgresql94-devel -y --nogpgcheck
 
-RUN yum -y install \
-  createrepo freeipmi fuse-libs httpd ipmitool libxml2-devel \
-  libxslt-devel lshw memcached mod_ssl net-snmp net-snmp-libs \
-  net-snmp-utils nfs-utils nodejs010-nodejs OpenIPMI \
-  openslp-devel openssl-devel portmap \
-  postgresql92-postgresql postgresql92-postgresql-devel postgresql92-postgresql-server \
-  qpid-cpp-client-ssl ruby193-ruby ruby193-ruby-devel scl-utils-build \
-  yum-utils zip zlib-devel \
-  ruby193-rubygem-bundler ruby193-rubygem-net-http-persistent \
-  ruby193-rubygem-thor ruby193-rubygem-thin ruby193-rubygem-daemons \
-  ruby193-rubygem-eventmachine ruby193-rubygem-rack ruby193-rubygem-minitest
+# Modified setup script to bypass systemctl variable read stuff
+ADD ./postgresql94-setup /usr/pgsql-9.4/bin/postgresql94-setup
 
-RUN yum -y install make gcc gcc-c++ libxml2-devel libxslt libxslt-devel libstdc++-devel
-RUN yum -y install git sudo memcached
+# Update data folder perms
+RUN chown -R postgres.postgres /var/lib/pgsql
 
-RUN touch /etc/sysconfig/network
-RUN /etc/rc.d/init.d/postgresql92-postgresql initdb
-RUN echo "local all all trust" > /opt/rh/postgresql92/root/var/lib/pgsql/data/pg_hba.conf
-RUN mkdir -p /opt/rh/postgresql92/root/etc/sysconfig/pgsql/
-RUN echo "unset PG_OOM_ADJ" > /opt/rh/postgresql92/root/etc/sysconfig/pgsql/postgresql92-postgresql
+#Modify perms on setup script
+RUN chmod +x /usr/pgsql-9.4/bin/postgresql94-setup
 
-# scl enable ruby193 postgresql92 nodejs010 'createdb -U postgres vmdb_test'
-# scl enable ruby193 postgresql92 nodejs010 'createdb -U postgres vmdb_development'
-# scl enable ruby193 postgresql92 nodejs010 'createdb -U postgres vmdb_production'
-# scl enable ruby193 postgresql92 nodejs010 "psql -c \"create role evm login password 'smartvm'\""
-# scl enable ruby193 postgresql92 nodejs010 "psql -c \"alter database vmdb_development owner to evm\""
+#Initialize data for pg engine
+RUN sh /usr/pgsql-9.4/bin/postgresql94-setup initdb
 
-RUN mkdir -p /var/www/
-RUN git clone https://github.com/ManageIQ/manageiq.git /var/www/miq
+#Access from all over --- NEVER DO THIS SHIT IN POST DEV ENVs !!!!!!!!!!!!!!!!!!! <--- READ THIS 
+ADD ./postgresql.conf /var/lib/pgsql/9.4/data/postgresql.conf
+ADD ./pg_hba.conf /var/lib/pgsql/9.4/data/pg_hba.conf
 
-RUN mkdir -p /var/www/miq/vmdb/log/apache
+#Add start script for postgres
+ADD ./start_postgres.sh /start_postgres.sh
 
-#RUN scl enable ruby193 postgresql92 nodejs010 "gem install bundler -v 1.3.5"
+RUN chmod +x /start_postgres.sh
 
-WORKDIR /var/www/miq/vmdb
-RUN scl enable ruby193 postgresql92 nodejs010 "bundle install --without qpid"
+EXPOSE 5432
 
-WORKDIR /var/www/miq
-RUN scl enable ruby193 postgresql92 nodejs010 "vmdb/bin/rake build:shared_objects"
-
-WORKDIR /var/www/miq/vmdb
-RUN scl enable ruby193 postgresql92 nodejs010 "bundle install --without qpid"
-
-RUN scl enable ruby193 postgresql92 nodejs010 "bin/rake db:migrate"
-RUN scl enable ruby193 postgresql92 nodejs010 "bin/rake evm:start"
-
-VOLUME ["/opt/rh/postgresql92/root/var/lib/pgsql/data/"]
+#Run pgEngine
+CMD ["/start_postgres.sh"]
