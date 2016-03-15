@@ -35,8 +35,8 @@ ADD ./pg_hba.conf /var/lib/pgsql/9.4/data/pg_hba.conf
 ADD ./start_postgres.sh /start_postgres.sh
 
 RUN chmod +x /start_postgres.sh
-
-EXPOSE 5432
+RUN /start_postgres.sh
+#EXPOSE 5432
 
 #Run pgEngine
-CMD ["/start_postgres.sh"]
+#CMD ["/start_postgres.sh"]
