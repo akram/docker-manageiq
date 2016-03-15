@@ -46,17 +46,17 @@ RUN yum -y install git libxml2-devel libxslt libxslt-devel sudo tar which
 
 RUN command curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -
 RUN curl -sSL https://get.rvm.io | rvm_tar_command=tar bash -s stable
+
 RUN /usr/local/rvm/bin/rvm install 2.2.2
-
-#RUN gem install bundler -v "~>1.3"
-
-
+env PATH /usr/local/rvm/rubies/ruby-2.2.2/bin/:$PATH
+RUN gem install bundler -v "~>1.3"
 RUN git clone https://github.com/ManageIQ/manageiq
-
-WORKDIR manageiq/vmdb
 RUN source /etc/profile.d/rvm.sh
 
-#RUN bundle install --without qpid
+WORKDIR manageiq/vmdb
+RUN bundle install --without qpid
+
+
 #WORKDIR ..
 #RUN vmdb/bin/rake build:shared_objects
 #WORKDIR vmdb
