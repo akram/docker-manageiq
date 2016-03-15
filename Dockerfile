@@ -1,5 +1,3 @@
-#Author:PG - Demo/Training/Testing
-
 FROM centos:centos7
 MAINTAINER Akram Ben Aissi <akram@free.fr> https://github.com/akram/manageiq 
 
